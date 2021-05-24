@@ -26,7 +26,7 @@ def generate(request):
     
     # Generate transactions.
     time_start = time.time()
-    block_no = 1
+    block_no = get_cur_block()
     for i in range(1, number_of_transactions + 1):
         # generate random, valid values
         v_id = str(uuid4())
@@ -64,7 +64,7 @@ def seal(request):
     # Seal transactions into blocks
     time_start = time.time()
     number_of_blocks = settings.N_BLOCKS
-    prev_hash = '0' * 64
+    prev_hash = get_prev_hash()
     for i in range(1, number_of_blocks + 1):
         block_transactions = Vote.objects.filter(block_id=i).order_by('timestamp')
         root = MerkleTools()
@@ -250,3 +250,17 @@ def _get_vote():
 
 def _get_timestamp():
     return datetime.datetime.now().timestamp()
+
+def get_cur_block():
+    try:
+        cur_block = Block.objects.latest('id')
+        return cur_block.id
+    except:
+        return 1
+
+def get_prev_hash():
+    try:
+        cur_block = Block.objects.latest('id')
+        return cur_block.h
+    except:
+        return '0'*64
